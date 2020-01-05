@@ -56,7 +56,7 @@ def get_items_per_url(url):
 
     items = []
     for item in articles:
-        if results := re.findall('<a.*href="(.*?)">(.*?)</a>', item, re.S):
+        if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
             url, name = results[0]
         else:
             continue
