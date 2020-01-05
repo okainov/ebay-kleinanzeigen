@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  tg-bot:
+    build: .
+    environment:
+      - TG_TOKEN=${TG_TOKEN}
+      - DEBUG=${DEBUG}
+      - HOST_URL=${HOST_URL}
+    volumes:
+      - ./jobs.sqlite:/app/jobs.sqlite
+    ports:
+      - "8444:8443"
