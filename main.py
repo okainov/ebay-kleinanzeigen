@@ -68,7 +68,7 @@ def get_items_per_url(url):
             price = int(prices[0])
 
         date = re.findall('aditem-addon">(.*?)</', item, re.S)[0].strip()
-        if '{' in date:
+        if '{' in date or '<' in date:
             continue
 
         image = re.findall('imgsrc="(.*?)"', item, re.S)[0].strip()
