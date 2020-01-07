@@ -71,7 +71,11 @@ def get_items_per_url(url):
         if '{' in date or '<' in date:
             continue
 
-        image = re.findall('imgsrc="(.*?)"', item, re.S)[0].strip()
+        try:
+            image = re.findall('imgsrc="(.*?)"', item, re.S)[0].strip()
+        except Exception as e:
+            logger.error(f'No image\n\t{item}')
+            continue
 
         items.append(Item(name, price, torg, url, date, image))
 
