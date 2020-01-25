@@ -13,6 +13,7 @@ import utils
 jobstores = {
     'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
 }
+# TODO: re-enable SQLite storage for persistency
 #scheduler = BackgroundScheduler(jobstores=jobstores)
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -95,8 +96,6 @@ def error(update, context):
 
 
 def echo(update: Update, context):
-    """Echo the user message."""
-    # update.message.reply_text(update.message.text)
     msg: Message = update.message
 
     url = update.message.text
