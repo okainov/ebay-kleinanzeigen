@@ -58,15 +58,14 @@ def get_items_per_url(url):
     qq = requests.get(url, headers=headers)
 
     text = qq.text
-    log.info(text)
 
     articles = re.findall('<article(.*?)</article', text, re.S)
     log.info('Articles length %s' % len(articles))
     items = []
     for item in articles:
         if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
-            log.info("Found link")
             url, name = results[0]
+
         else:
             continue
 
@@ -89,7 +88,10 @@ def get_items_per_url(url):
         except Exception as e:
             logger.error(f'No image\n\t{item}')
             continue
-
+        log.info("image: " + image)
+        log.info("URL " + url)
+        log.info("Title " + name)
+        log.info("Price " + price)
         items.append(Item(name, price, torg, url, image))
     return items
 
@@ -123,7 +125,6 @@ def echo(update: Update, context):
 
     log.info("Get items")
     items = get_items_per_url(url)
-    log.info(items)
     for item in items:
         if chat_id in last_items and item.url == last_items[chat_id]['last_item']:
             #log.info('Breaking the loop')
