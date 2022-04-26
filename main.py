@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+from bs4 import BeautifulSoup
+
 
 import requests
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -58,12 +60,16 @@ def get_items_per_url(url):
     qq = requests.get(url, headers=headers)
 
     text = qq.text
+    soup = BeautifulSoup(text, 'html.parser')
+
 
     articles = re.findall('<article(.*?)</article', text, re.S)
     log.info('Articles length %s' % len(articles))
     items = []
     for item in articles:
-        if results := re.findall('<a class="ellipsis" href="(.*?)">(.*?)</a>', item, re.S):
+        soup_result = soup.find_all("a", {"class": 'ellipsis'})
+        log.info(soup_result)
+        if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
             url, name = results[0]
 
         else:
