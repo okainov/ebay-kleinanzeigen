@@ -74,12 +74,6 @@ def get_items_per_url(url):
             name = soup_result[0].text
         else:
             continue
-        # log.info(soup_result)
-        # if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
-        #     url, name = results[0]
-
-        # else:
-        #     continue
 
         price_line = re.findall('aditem-main--middle--price">(.*?)</p>', item, re.S)
         if len(price_line) > 0:
@@ -130,7 +124,7 @@ def echo(update: Update, context):
 
     if chat_id not in last_items:
         # Nothing here, schedule
-        scheduler.add_job(echo, trigger='interval', args=(update, context), minutes=2, id=str(chat_id))
+        scheduler.add_job(echo, trigger='interval', args=(update, context), minutes=15, id=str(chat_id))
         log.info('Scheduled job')
         last_items[chat_id] = {'last_item': None, 'url': url}
 
