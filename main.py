@@ -31,7 +31,6 @@ class Item:
         self.price = price
         self.torg = torg
         self.url = 'https://www.ebay-kleinanzeigen.de' + url
-        #self.date = date
         self.image = image
 
     def __repr__(self):
@@ -41,7 +40,6 @@ class Item:
         result = f'{self.title} - {self.price}'
         if self.torg:
             result += ' VB'
-        #result += f'\n\t{self.date}\n'
 
         result += self.url
         result += '\n'
@@ -85,9 +83,6 @@ def get_items_per_url(url):
         if prices := re.findall(r'\d+', price_line, re.S):
             price = int(prices[0])
 
-        # date = re.findall('aditem-addon">(.*?)</', item, re.S)[0].strip()
-        # if '{' in date or '<' in date:
-        #     continue
 
         try:
             image = re.findall('imgsrc="(.*?)"', item, re.S)[0].strip()
