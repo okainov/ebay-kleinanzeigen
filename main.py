@@ -60,14 +60,15 @@ def get_items_per_url(url):
     qq = requests.get(url, headers=headers)
 
     text = qq.text
-    soup = BeautifulSoup(text, 'html.parser')
+    
 
 
     articles = re.findall('<article(.*?)</article', text, re.S)
     log.info('Articles length %s' % len(articles))
     items = []
     for item in articles:
-        soup_result = soup.find_all("a", {"class": 'ellipsis'})
+        soup = BeautifulSoup(item, 'html.parser')
+        soup_result = soup.find_all("a", {"class": 'ellipsis'})[0]
         log.info(soup_result)
         if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
             url, name = results[0]
