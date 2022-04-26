@@ -64,7 +64,7 @@ def get_items_per_url(url):
 
 
     articles = re.findall('<article(.*?)</article', text, re.S)
-    log.info('Articles length %s' % len(articles))
+    log.info(f"Articles length {len(articles)}")
     items = []
     for item in articles:
         soup = BeautifulSoup(item, 'html.parser')
