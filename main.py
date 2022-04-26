@@ -79,7 +79,7 @@ def get_items_per_url(url):
         if len(price_line) > 0:
             price_line = price_line[0]
         else:
-            price_line = 0
+            price_line = "0"
         torg = 'VB' in price_line
         price = None
         if prices := re.findall(r'\d+', price_line, re.S):
