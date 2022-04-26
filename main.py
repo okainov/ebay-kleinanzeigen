@@ -70,7 +70,11 @@ def get_items_per_url(url):
         else:
             continue
 
-        price_line = re.findall('<strong>(.*?)</strong>', item, re.S)[0]
+        price_line = re.findall('aditem-main--middle--price">(.*?)</p>', item, re.S)
+        if len(price_line) > 0:
+            price_line = price_line[0]
+        else:
+            price_line = 0
         torg = 'VB' in price_line
         price = None
         if prices := re.findall(r'\d+', price_line, re.S):
