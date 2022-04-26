@@ -63,7 +63,7 @@ def get_items_per_url(url):
     log.info('Articles length %s' % len(articles))
     items = []
     for item in articles:
-        if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
+        if results := re.findall('<a class="ellipsis" href="(.*?)">(.*?)</a>', item, re.S):
             url, name = results[0]
 
         else:
@@ -91,7 +91,6 @@ def get_items_per_url(url):
         log.info("image: " + image)
         log.info("URL " + url)
         log.info("Title " + name)
-        log.info("Price " + price)
         items.append(Item(name, price, torg, url, image))
     return items
 
