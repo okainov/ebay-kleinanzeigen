@@ -47,17 +47,18 @@ class Item:
 
 
 def get_items_per_url(url):
+    log = utils.get_logger()
     qq = requests.get(url)
 
     text = qq.text
-    # with open(r'C:\Users\Kleinanzeigen\Desktop\qq.html', 'r') as f:
-    #     text = f.read()
+    log.info(text)
 
     articles = re.findall('<article(.*?)</article', text, re.S)
-
+    log.info('Articles length %s' % len(articles))
     items = []
     for item in articles:
         if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
+            log.info("Found link")
             url, name = results[0]
         else:
             continue
@@ -79,7 +80,7 @@ def get_items_per_url(url):
             continue
 
         items.append(Item(name, price, torg, url, date, image))
-
+    print("Items size " + len(items))
     return items
 
 
@@ -110,8 +111,9 @@ def echo(update: Update, context):
         log.info('Scheduled job')
         last_items[chat_id] = {'last_item': None, 'url': url}
 
+    log.info("Get items")
     items = get_items_per_url(url)
-
+    log.info(items)
     for item in items:
         if chat_id in last_items and item.url == last_items[chat_id]['last_item']:
             #log.info('Breaking the loop')
