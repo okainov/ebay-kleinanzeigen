@@ -48,7 +48,14 @@ class Item:
 
 def get_items_per_url(url):
     log = utils.get_logger()
-    qq = requests.get(url)
+    # Simulate browser headers
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+        'Host': 'www.ebay-kleinanzeigen.de',
+        'Accept': '*/*',
+        }
+
+    qq = requests.get(url, headers=headers)
 
     text = qq.text
     log.info(text)
