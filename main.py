@@ -68,13 +68,18 @@ def get_items_per_url(url):
     items = []
     for item in articles:
         soup = BeautifulSoup(item, 'html.parser')
-        soup_result = soup.find_all("a", {"class": 'ellipsis'})[0]
-        log.info(soup_result)
-        if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
-            url, name = results[0]
-
+        soup_result = soup.find_all("a", {"class": 'ellipsis'})
+        if len(soup_result) > 0:
+            url = soup_result[0]['href']
+            name = soup_result[0].text
         else:
             continue
+        # log.info(soup_result)
+        # if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
+        #     url, name = results[0]
+
+        # else:
+        #     continue
 
         price_line = re.findall('aditem-main--middle--price">(.*?)</p>', item, re.S)
         if len(price_line) > 0:
