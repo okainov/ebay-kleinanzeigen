@@ -91,7 +91,6 @@ def get_items_per_url(url):
             continue
 
         items.append(Item(name, price, torg, url, image))
-    print("Items size " + len(items))
     return items
 
 
