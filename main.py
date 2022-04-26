@@ -107,7 +107,7 @@ def echo(update: Update, context):
 
     if chat_id not in last_items:
         # Nothing here, schedule
-        scheduler.add_job(echo, trigger='interval', args=(update, context), minutes=15, id=str(chat_id))
+        scheduler.add_job(echo, trigger='interval', args=(update, context), minutes=2, id=str(chat_id))
         log.info('Scheduled job')
         last_items[chat_id] = {'last_item': None, 'url': url}
 
