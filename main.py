@@ -65,6 +65,10 @@ def get_items_per_url(url):
     log.info(f"Articles length {len(articles)}")
     items = []
     for item in articles:
+        if 'ref="/pro/' in item:
+            # This is ad block, skip
+            continue
+
         soup = BeautifulSoup(item, 'html.parser')
         soup_result = soup.find_all("a", {"class": 'ellipsis'})
         if len(soup_result) > 0:
