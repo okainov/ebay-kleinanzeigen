@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+from bs4 import BeautifulSoup
+
 
 import requests
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -24,22 +26,20 @@ logger = utils.get_logger()
 
 
 class Item:
-    def __init__(self, title, price, torg, url, date, image):
+    def __init__(self, title, price, torg, url, image):
         self.title = title
         self.price = price
         self.torg = torg
         self.url = 'https://www.ebay-kleinanzeigen.de' + url
-        self.date = date
         self.image = image
 
     def __repr__(self):
-        return f'{self.title} - {self.price} - {self.date}'
+        return f'{self.title} - {self.price}'
 
     def __str__(self):
         result = f'{self.title} - {self.price}'
         if self.torg:
             result += ' VB'
-        result += f'\n\t{self.date}\n'
 
         result += self.url
         result += '\n'
@@ -47,39 +47,52 @@ class Item:
 
 
 def get_items_per_url(url):
-    qq = requests.get(url)
+    log = utils.get_logger()
+    # Simulate browser headers
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+        'Host': 'www.ebay-kleinanzeigen.de',
+        'Accept': '*/*',
+        }
+
+    qq = requests.get(url, headers=headers)
 
     text = qq.text
-    # with open(r'C:\Users\Kleinanzeigen\Desktop\qq.html', 'r') as f:
-    #     text = f.read()
+    
+
 
     articles = re.findall('<article(.*?)</article', text, re.S)
-
+    log.info(f"Articles length {len(articles)}")
     items = []
     for item in articles:
-        if results := re.findall('<a.*?href="(.*?)">(.*?)</a>', item, re.S):
-            url, name = results[0]
+        soup = BeautifulSoup(item, 'html.parser')
+        soup_result = soup.find_all("a", {"class": 'ellipsis'})
+        if len(soup_result) > 0:
+            url = soup_result[0]['href']
+            name = soup_result[0].text
         else:
             continue
 
-        price_line = re.findall('<strong>(.*?)</strong>', item, re.S)[0]
+        price_line = re.findall('aditem-main--middle--price">(.*?)</p>', item, re.S)
+        if len(price_line) > 0:
+            price_line = price_line[0]
+        else:
+            price_line = "0"
         torg = 'VB' in price_line
         price = None
         if prices := re.findall(r'\d+', price_line, re.S):
             price = int(prices[0])
 
-        date = re.findall('aditem-addon">(.*?)</', item, re.S)[0].strip()
-        if '{' in date or '<' in date:
-            continue
 
         try:
             image = re.findall('imgsrc="(.*?)"', item, re.S)[0].strip()
         except Exception as e:
             logger.error(f'No image\n\t{item}')
             continue
-
-        items.append(Item(name, price, torg, url, date, image))
-
+        log.info("image: " + image)
+        log.info("URL " + url)
+        log.info("Title " + name)
+        items.append(Item(name, price, torg, url, image))
     return items
 
 
@@ -110,8 +123,8 @@ def echo(update: Update, context):
         log.info('Scheduled job')
         last_items[chat_id] = {'last_item': None, 'url': url}
 
+    log.info("Get items")
     items = get_items_per_url(url)
-
     for item in items:
         if chat_id in last_items and item.url == last_items[chat_id]['last_item']:
             #log.info('Breaking the loop')
