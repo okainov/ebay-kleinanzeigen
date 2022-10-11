@@ -1,12 +1,12 @@
+import datetime
 import os
 import re
 import sys
-from bs4 import BeautifulSoup
-
 
 import requests
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
+from bs4 import BeautifulSoup
 from telegram import Update, Message
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
@@ -16,7 +16,7 @@ jobstores = {
     'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
 }
 # TODO: re-enable SQLite storage for persistency
-#scheduler = BackgroundScheduler(jobstores=jobstores)
+# scheduler = BackgroundScheduler(jobstores=jobstores)
 scheduler = BackgroundScheduler()
 scheduler.start()
 
@@ -26,20 +26,22 @@ logger = utils.get_logger()
 
 
 class Item:
-    def __init__(self, title, price, torg, url, image):
+    def __init__(self, title, price, torg, url, date, image):
         self.title = title
         self.price = price
         self.torg = torg
         self.url = 'https://www.ebay-kleinanzeigen.de' + url
+        self.date = date
         self.image = image
 
     def __repr__(self):
-        return f'{self.title} - {self.price}'
+        return f'{self.title} - {self.price} - {self.date}'
 
     def __str__(self):
         result = f'{self.title} - {self.price}'
         if self.torg:
             result += ' VB'
+        result += f'\n\t{self.date}\n'
 
         result += self.url
         result += '\n'
@@ -53,13 +55,10 @@ def get_items_per_url(url):
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
         'Host': 'www.ebay-kleinanzeigen.de',
         'Accept': '*/*',
-        }
+    }
 
-    qq = requests.get(url, headers=headers)
-
-    text = qq.text
-    
-
+    res = requests.get(url, headers=headers)
+    text = res.text
 
     articles = re.findall('<article(.*?)</article', text, re.S)
     log.info(f"Articles length {len(articles)}")
@@ -77,7 +76,7 @@ def get_items_per_url(url):
         else:
             continue
 
-        price_line = re.findall('aditem-main--middle--price">(.*?)</p>', item, re.S)
+        price_line = re.findall('aditem-main--middle--price.*?>(.*?)</p>', item, re.S)
         if len(price_line) > 0:
             price_line = price_line[0]
         else:
@@ -87,6 +86,16 @@ def get_items_per_url(url):
         if prices := re.findall(r'\d+', price_line, re.S):
             price = int(prices[0])
 
+        date = datetime.datetime.now()
+        try:
+            date = re.findall('icon icon-small icon-calendar-open.*?</i>(.*?)</', item, re.S)[0].strip()
+            if '{' in date or '<' in date or 'Heute' in date:
+                date = datetime.datetime.now()
+            elif 'Gestern' in date:
+                date = datetime.datetime.now() - datetime.timedelta(days=1)
+        except Exception as e:
+            # If there is no date - it's some highlighted/"top" item
+            pass
 
         try:
             image = re.findall('imgsrc="(.*?)"', item, re.S)[0].strip()
@@ -96,7 +105,7 @@ def get_items_per_url(url):
         log.info("image: " + image)
         log.info("URL " + url)
         log.info("Title " + name)
-        items.append(Item(name, price, torg, url, image))
+        items.append(Item(name, price, torg, url, date, image))
     return items
 
 
@@ -131,7 +140,7 @@ def echo(update: Update, context):
     items = get_items_per_url(url)
     for item in items:
         if chat_id in last_items and item.url == last_items[chat_id]['last_item']:
-            #log.info('Breaking the loop')
+            # log.info('Breaking the loop')
             break
         msg.reply_text(str(item))
         # update.message.reply_photo(item.image)
